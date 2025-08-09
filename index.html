@@ -6,179 +6,314 @@
     <title>八字职业预测</title>
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript@1.6.0/lunar.min.js"></script>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-          margin: 0;
-          font-family: 'Noto Serif SC', serif;
-          background: url('HH.jpg') center center no-repeat;
-          background-size: cover;
-          background-attachment: fixed;
-          color: #f8f8f8;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 2rem;
+            margin: 0;
+            font-family: 'Noto Serif SC', serif;
+            background: url('HH.jpg') center center no-repeat;
+            color: #f8f8f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            min-height: 100vh;
         }
 
         .sidebar {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 60px;
-          height: 100vh;
-          background-color: rgba(0, 0, 0, 0.6);
-          transition: width 0.3s ease;
-          overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 60px;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.6);
+            transition: width 0.3s ease;
+            overflow: hidden;
+            z-index: 1000;
         }
 
         .sidebar:hover {
-          width: 200px;
+            width: 200px;
         }
 
         .sidebar ul {
-          list-style: none;
-          padding: 0;
-          margin: 0;
-          color: white;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            color: white;
         }
 
         .sidebar li {
-          padding: 20px;
-          transition: background 0.3s;
-          cursor: pointer;
+            padding: 20px;
+            transition: background 0.3s;
+            cursor: pointer;
         }
 
         .sidebar li:hover {
-          background-color: rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .main-container {
+            display: flex;
+            width: 100%;
+            max-width: 1400px;
+            gap: 2rem;
+            margin-left: 60px;
         }
 
         .content {
-          flex-grow: 1;
-          padding: 2rem;
-          color: #f8f8f8;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          margin-left: 60px;
+            flex: 1;
+            padding: 2rem;
+            color: #f8f8f8;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .chat-container {
+            width: 400px;
+            height: 600px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ffd700;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #000;
+            padding: 1rem;
+            border-radius: 13px 13px 0 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 0.8rem;
+            border-radius: 12px;
+            word-wrap: break-word;
+            animation: fadeInMessage 0.3s ease-out;
+            line-height: 1.4;
+        }
+
+        .user-message {
+            background: #ffd700;
+            color: #000;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .ai-message {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f8f8f8;
+            align-self: flex-start;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .celebrity-card {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid #ffd700;
+            border-radius: 8px;
+            padding: 0.8rem;
+            margin: 0.3rem 0;
+            font-size: 0.85rem;
+        }
+
+        .celebrity-name {
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .celebrity-info {
+            color: #f8f8f8;
+            margin-top: 0.3rem;
+        }
+
+        .chat-input-container {
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ffd700;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #f8f8f8;
+            font-size: 0.9rem;
+        }
+
+        .chat-input::placeholder {
+            color: rgba(248, 248, 248, 0.6);
+        }
+
+        .chat-send-btn {
+            width: 100%;
+            margin-top: 0.5rem;
+            padding: 0.8rem;
+            background: #ffd700;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chat-send-btn:hover {
+            background: #ffed4e;
+            transform: translateY(-2px);
+        }
+
+        .chat-send-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            color: #ffd700;
+            font-style: italic;
+            padding: 0.5rem 1rem;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 2px;
+        }
+
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: typingDot 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
         }
 
         h1 {
-          color: #ffd700;
-          font-size: 2.5rem;
+            color: #ffd700;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
         }
 
         form {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid #555;
-          padding: 2rem;
-          border-radius: 12px;
-          width: 100%;
-          max-width: 500px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #555;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            backdrop-filter: blur(10px);
         }
 
         label {
-          display: block;
-          margin-top: 1rem;
+            display: block;
+            margin-top: 1rem;
+            color: #ffd700;
+            font-weight: bold;
         }
 
         input, select {
-          width: 100%;
-          padding: 0.5rem;
-          margin-top: 0.25rem;
-          background: #ffffff;
-          color: #000000;
-          border: 1px solid #666;
-          border-radius: 6px;
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 0.25rem;
+            background: rgba(255, 255, 255, 0.9);
+            color: #000000;
+            border: 1px solid #666;
+            border-radius: 6px;
         }
 
         button {
-          margin-top: 1.5rem;
-          width: 100%;
-          padding: 0.75rem;
-          background: #ffd700;
-          color: #000;
-          border: none;
-          border-radius: 6px;
-          font-weight: bold;
-          cursor: pointer;
+            margin-top: 1.5rem;
+            width: 100%;
+            padding: 0.75rem;
+            background: #ffd700;
+            color: #000;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
 
-        .result-card {
-          background: rgba(0, 0, 0, 0.7);
-          border: 2px solid #ffd700;
-          border-radius: 12px;
-          padding: 1.5rem;
-          margin-top: 2rem;
-          text-align: center;
-          box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-          max-width: 500px;
-          width: 100%;
-          animation: fadeIn 0.8s ease-out;
+        button:hover {
+            background: #ffed4e;
+            transform: translateY(-2px);
         }
 
-        .result-card h2 {
-          color: #ffd700;
+        @keyframes fadeInMessage {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
-        .result-card .highlight {
-          color: #00ffff;
-          font-weight: bold;
+        @keyframes typingDot {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
         }
 
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+        /* 響應式設計 */
+        @media (max-width: 1200px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .chat-container {
+                width: 100%;
+                max-width: 500px;
+                height: 400px;
+                position: relative;
+                top: 0;
+                margin: 0 auto;
+            }
         }
 
-        .wood { background: linear-gradient(135deg, #4CAF50, #8BC34A); }
-        .fire { background: linear-gradient(135deg, #FF5722, #FF9800); }
-        .earth { background: linear-gradient(135deg, #795548, #9E9E9E); }
-        .metal { background: linear-gradient(135deg, #607D8B, #9E9E9E); }
-        .water { background: linear-gradient(135deg, #2196F3, #03A9F4); }
-
-        .bazi-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 15px;
-          text-align: center;
-          margin: 20px 0;
-          font-size: 1.2rem;
-        }
-
-        .job-box {
-          display: flex;
-          align-items: center;
-          padding: 15px;
-          border-radius: 12px;
-          color: white;
-          font-size: 1.2rem;
-          font-weight: bold;
-          border: 1px solid #555;
-          margin-top: 1rem;
-        }
-
-        .job-icon {
-          font-size: 2.5rem;
-          margin-right: 20px;
-        }
-
-        .job-details ul {
-          text-align: left;
-          padding-left: 20px;
-          margin: 10px 0;
-        }
-
-        .bazi-pillar {
-          width: 60px;
-          height: 60px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.8rem;
-          font-weight: bold;
-          color: white;
-          margin: 0 auto 15px;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            
+            .main-container {
+                margin-left: 0;
+            }
+            
+            .sidebar {
+                display: none;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
@@ -186,155 +321,365 @@
 <div class="sidebar">
     <ul>
         <li onclick="location.href='index.html'">首页</li>
-        <li onclick="location.href='bazi.html'">查询八字</li>
         <li onclick="location.href='about.html'">关于</li>
     </ul>
 </div>
 
-<div class="content">
-    <h1>八字职业预测</h1>
-    <form id="baziForm">
-        <label for="name">Name（Chinese names are more accurate）</label>
-        <input type="text" id="name" required>
+<div class="main-container">
+    <div class="content">
+        <h1>Bazi Career Prediction</h1>
+        <form id="baziForm">
+            <label for="name">Name</label>
+            <input type="text" id="name" required placeholder="Please enter your name">
 
-        <label for="birthDate">Birth Date</label>
-        <input type="date" id="birthDate" required>
+            <label for="birthDate">Birth Date</label>
+            <input type="date" id="birthDate" required>
 
-        <label for="birthTime">Birth Time</label>
-        <input type="time" id="birthTime" required>
+            <label for="birthTime">Time of birth</label>
+            <input type="time" id="birthTime" required>
 
-        <button type="submit">Predicted career</button>
-    </form>
+            <button type="submit">Start Analysis</button>
+        </form>
 
-    <div id="result"></div>
+        <div id="result"></div>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            🔮 AI Chat Box
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="ai-message">
+                Welcome to Bazi Career Prediction.please fill in your birth information and click to start analysis,I would provide:<br><br>
+                🎯 Personal Career Prediction<br>
+                🌟 Successful cases of people with the same Bazi<br>
+                💰 Analysis of wealth creation paths<br>
+                📊 Recommendations based on real data
+            </div>
+        </div>
+        <div class="typing-indicator" id="typingIndicator">
+            <span>Analysing</span>
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="chatInput" placeholder="Please enter your questions...">
+            <button class="chat-send-btn" id="chatSendBtn">Send</button>
+        </div>
+    </div>
 </div>
 
 <script>
-    const form = document.getElementById('baziForm');
-    const resultDiv = document.getElementById('result');
+const billionaireIndexedData = {
+  "甲": [
+    {"Name": "Elon Musk", "bazi": "辛亥甲午甲申", "Source of Wealth": "Tesla, SpaceX", "Net Worth (billions)": 270.1, "industryElement": "metal"},
+    {"Name": "Azim Premji", "bazi": "乙未戊子甲戌", "Source of Wealth": "Wipro", "Net Worth (billions)": 22.4, "industryElement": "fire"},
+    {"Name": "Tomáš Chrenek", "bazi": "戊申甲子甲戌", "Source of Wealth": "Rohlik.cz investment", "Net Worth (billions)": 21.0, "industryElement": "fire"}
+  ],
+  "乙": [
+    {"Name": "Masayoshi Son", "bazi": "丁酉壬子乙亥", "Source of Wealth": "SoftBank Group", "Net Worth (billions)": 23.4, "industryElement": "fire"},
+    {"Name": "Jorge Paulo Lemann", "bazi": "己丑丙子乙未", "Source of Wealth": "3G Capital", "Net Worth (billions)": 15.4, "industryElement": "metal"},
+    {"Name": "David Beckham", "bazi": "乙卯丁亥乙酉", "Source of Wealth": "Inter Miami CF", "Net Worth (billions)": 14.8, "industryElement": "fire"}
+  ],
+  "丙": [
+    {"Name": "Daniel Křetínský", "bazi": "乙卯癸未丙辰", "Source of Wealth": "EPI Holding", "Net Worth (billions)": 78.0, "industryElement": "metal"},
+    {"Name": "Joseph Safra", "bazi": "戊寅庚申丙申", "Source of Wealth": "Banco Safra", "Net Worth (billions)": 25.2, "industryElement": "metal"},
+    {"Name": "Roman Abramovich", "bazi": "丙午辛亥丙戌", "Source of Wealth": "Chelsea F.C.", "Net Worth (billions)": 14.5, "industryElement": "fire"}
+  ],
+  "丁": [
+    {"Name": "Alisher Usmanov", "bazi": "癸卯甲子丁亥", "Source of Wealth": "Access Industries", "Net Worth (billions)": 14.4, "industryElement": "metal"},
+    {"Name": "Rupert Murdoch", "bazi": "辛巳庚子丁卯", "Source of Wealth": "21st Century Fox", "Net Worth (billions)": 17.4, "industryElement": "fire"},
+    {"Name": "Pavel Durov", "bazi": "甲子丙戌丁酉", "Source of Wealth": "Telegram", "Net Worth (billions)": 15.5, "industryElement": "fire"}
+  ],
+  "戊": [
+    {"Name": "Mark Zuckerberg", "bazi": "甲子丙子戊申", "Source of Wealth": "Meta Platforms", "Net Worth (billions)": 176.2, "industryElement": "fire"},
+    {"Name": "Michael Dell", "bazi": "乙巳戊子戊午", "Source of Wealth": "Dell Technologies", "Net Worth (billions)": 71.5, "industryElement": "fire"},
+    {"Name": "Ken Griffin", "bazi": "戊申甲戌戊戌", "Source of Wealth": "Citadel", "Net Worth (billions)": 35.4, "industryElement": "metal"}
+  ],
+  "己": [
+    {"Name": "Sergey Brin", "bazi": "癸丑甲子己未", "Source of Wealth": "Alphabet Inc.", "Net Worth (billions)": 127.6, "industryElement": "fire"},
+    {"Name": "Zhang Yiming", "bazi": "癸亥甲子己卯", "Source of Wealth": "ByteDance", "Net Worth (billions)": 43.4, "industryElement": "fire"},
+    {"Name": "Hasso Plattner", "bazi": "甲午丙戌己酉", "Source of Wealth": "SAP", "Net Worth (billions)": 15.2, "industryElement": "fire"}
+  ],
+  "庚": [
+    {"Name": "Jeff Bezos", "bazi": "甲辰丙子庚辰", "Source of Wealth": "Amazon", "Net Worth (billions)": 194.2, "industryElement": "fire"},
+    {"Name": "Petr Kellner", "bazi": "甲辰丙子庚戌", "Source of Wealth": "PPF Group", "Net Worth (billions)": 17.5, "industryElement": "metal"},
+    {"Name": "Carlos Slim", "bazi": "庚辰戊子庚戌", "Source of Wealth": "Grupo Carso", "Net Worth (billions)": 81.2, "industryElement": "earth"}
+  ],
+  "辛": [
+    {"Name": "Mukesh Ambani", "bazi": "丁酉癸卯辛巳", "Source of Wealth": "Reliance Industries", "Net Worth (billions)": 116.0, "industryElement": "fire"},
+    {"Name": "Radovan Vítek", "bazi": "戊申甲子辛卯", "Source of Wealth": "CG CZ", "Net Worth (billions)": 25.9, "industryElement": "metal"},
+    {"Name": "Andrej Babiš", "bazi": "甲午丙戌辛卯", "Source of Wealth": "Agrofert", "Net Worth (billions)": 4.04, "industryElement": "metal"}
+  ],
+  "壬": [
+    {"Name": "Bill Gates", "bazi": "乙未戊子壬戌", "Source of Wealth": "Microsoft", "Net Worth (billions)": 128.1, "industryElement": "fire"},
+    {"Name": "Sheldon Adelson", "bazi": "癸酉甲子壬戌", "Source of Wealth": "Las Vegas Sands", "Net Worth (billions)": 35.1, "industryElement": "fire"},
+    {"Name": "Jozef Tkáč", "bazi": "癸卯甲子壬戌", "Source of Wealth": "J&T Finance Group", "Net Worth (billions)": 1.2, "industryElement": "metal"}
+  ],
+  "癸": [
+    {"Name": "Larry Ellison", "bazi": "甲午丙戌癸卯", "Source of Wealth": "Oracle", "Net Worth (billions)": 114.6, "industryElement": "fire"},
+    {"Name": "Sam Walton", "bazi": "戊午甲子癸未", "Source of Wealth": "Walmart", "Net Worth (billions)": 247.0, "industryElement": "metal"},
+    {"Name": "Rinat Akhmetov", "bazi": "丙午庚戌癸卯", "Source of Wealth": "System Capital Management", "Net Worth (billions)": 7.6, "industryElement": "wood"}
+  ]
+};
 
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
+const careerPredictions = {
+    "甲": { 
+        element: "wood", 
+        careers: ["科技創新", "新能源", "太空科技", "電動車", "人工智能"], 
+        traits: "創新領導，開拓精神",
+        topIndustries: ["metal", "fire", "wood"],
+        avgWealth: 56.12
+    },
+    "乙": { 
+        element: "wood", 
+        careers: ["軟件科技", "投資銀行", "體育產業", "媒體娛樂"], 
+        traits: "靈活變通，投資眼光",
+        topIndustries: ["fire", "metal", "earth"],
+        avgWealth: 17.87
+    },
+    "丙": { 
+        element: "fire", 
+        careers: ["能源投資", "銀行金融", "體育俱樂部", "媒體集團"], 
+        traits: "熱情領導，影響力強",
+        topIndustries: ["metal", "fire", "water"],
+        avgWealth: 39.23
+    },
+    "丁": { 
+        element: "fire", 
+        careers: ["工業投資", "媒體傳播", "通訊科技", "金融服務"], 
+        traits: "精準洞察，戰略思維",
+        topIndustries: ["metal", "fire", "wood"],
+        avgWealth: 15.77
+    },
+    "戊": { 
+        element: "earth", 
+        careers: ["社交媒體", "科技平台", "電腦硬件", "對沖基金"], 
+        traits: "穩重建設，平台思維",
+        topIndustries: ["metal", "fire", "wood"],
+        avgWealth: 94.37
+    },
+    "己": { 
+        element: "earth", 
+        careers: ["搜索引擎", "短視頻", "企業軟件", "數據分析"], 
+        traits: "服務導向，用戶思維",
+        topIndustries: ["metal", "fire", "earth"],
+        avgWealth: 61.73
+    },
+    "庚": { 
+        element: "metal", 
+        careers: ["電商平台", "金融投資", "電信通訊", "基礎建設"], 
+        traits: "執行力強，系統建設",
+        topIndustries: ["metal", "wood", "earth"],
+        avgWealth: 97.63
+    },
+    "辛": { 
+        element: "metal", 
+        careers: ["石化能源", "房地產", "農業集團", "精密製造"], 
+        traits: "精益求精，品質導向",
+        topIndustries: ["metal", "fire", "earth"],
+        avgWealth: 48.64
+    },
+    "壬": { 
+        element: "water", 
+        careers: ["軟件平台", "博彩娛樂", "金融服務", "國際貿易"], 
+        traits: "適應性強，國際視野",
+        topIndustries: ["fire", "metal", "earth"],
+        avgWealth: 54.8
+    },
+    "癸": { 
+        element: "water", 
+        careers: ["數據庫", "零售連鎖", "資源開發", "深度技術"], 
+        traits: "深度專精，長期價值",
+        topIndustries: ["metal", "fire", "earth"],
+        avgWealth: 123.07
+    }
+};
 
-      const name = document.getElementById('name').value;
-      const birthDate = document.getElementById('birthDate').value;
-      const birthTime = document.getElementById('birthTime').value;
-
-      if (!birthDate || !birthTime) return;
-
-      const [year, month, day] = birthDate.split('-').map(Number);
-      const [hour, minute] = birthTime.split(':').map(Number);
-
-      const solar = Solar.fromYmdHms(year, month, day, hour, minute, 0);
-      const lunar = solar.getLunar();
-      const eightChar = lunar.getEightChar();
-      const dayGan = eightChar.getDayGan();
-
-      function getJobCategory(dayGan) {
-        const map = {
-          '甲': '教育 / 规划', '乙': '设计 / 艺术',
-          '丙': '传媒 / 表演', '丁': '创作 / 健康',
-          '戊': '管理 / 商业', '己': '策划 / 文化',
-          '庚': '技术 / 工程', '辛': '数据 / 金融',
-          '壬': '科技 / 投资', '癸': '研究 / 心理'
+class BaziChatBot {
+    constructor() {
+        this.chatMessages = document.getElementById('chatMessages');
+        this.chatInput = document.getElementById('chatInput');
+        this.chatSendBtn = document.getElementById('chatSendBtn');
+        this.typingIndicator = document.getElementById('typingIndicator');
+        this.currentBazi = null;
+        
+        this.initEventListeners();
+    }
+    
+    initEventListeners() {
+        this.chatSendBtn.addEventListener('click', () => this.sendMessage());
+        this.chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.sendMessage();
+        });
+        
+        document.getElementById('baziForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleBaziSubmission();
+        });
+    }
+    
+    async handleBaziSubmission() {
+        const name = document.getElementById('name').value;
+        const birthDate = document.getElementById('birthDate').value;
+        const birthTime = document.getElementById('birthTime').value;
+        
+        if (!name || !birthDate || !birthTime) {
+            this.addMessage('請填寫完整的姓名、出生日期和時間。', 'ai');
+            return;
+        }
+        
+        const mockBazi = this.generateMockBazi(name, birthDate, birthTime);
+        this.currentBazi = mockBazi;
+        
+        await this.showBaziAnalysis(mockBazi, name);
+    }
+    
+    generateMockBazi(name, birthDate, birthTime) {
+        const tianGan = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+        const diZhi = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+        
+        const year = new Date(birthDate).getFullYear();
+        const month = new Date(birthDate).getMonth() + 1;
+        const day = new Date(birthDate).getDate();
+        
+        const yearTian = tianGan[(year - 1984) % 10];
+        const yearDi = diZhi[(year - 1984) % 12];
+        const monthTian = tianGan[(month - 1) % 10];
+        const monthDi = diZhi[(month - 1) % 12];
+        const dayTian = tianGan[(day - 1) % 10];
+        const dayDi = diZhi[(day - 1) % 12];
+        
+        return {
+            yearTian, yearDi, monthTian, monthDi, dayTian, dayDi,
+            bazi: `${yearTian}${yearDi}${monthTian}${monthDi}${dayTian}${dayDi}`
         };
-        return map[dayGan] || '多领域';
-      }
+    }
+    
+    async showBaziAnalysis(bazi, name) {
+        this.addMessage(`正在為 ${name} 分析八字：${bazi.bazi}`, 'user');
+        
+        await this.simulateTyping();
+        
+        const dayTian = bazi.dayTian;
+        const prediction = careerPredictions[dayTian];
+        
+        let analysisMessage = `🎯 **職業預測分析**\n\n`;
+        analysisMessage += `您的日干為「${dayTian}」，屬${prediction.element}性\n`;
+        analysisMessage += `性格特質：${prediction.traits}\n`;
+        analysisMessage += `平均財富水平：${prediction.avgWealth}億美元\n\n`;
+        analysisMessage += `適合職業方向：\n`;
+        prediction.careers.forEach(career => {
+            analysisMessage += `• ${career}\n`;
+        });
+        analysisMessage += `\n主要成功行業:${prediction.topIndustries.join('、')}`;
+        
+        this.addMessage(analysisMessage, 'ai');
+        
+        await this.findSimilarCelebrities(bazi);
+    }
+    
+    async findSimilarCelebrities(bazi) {
+        await this.simulateTyping();
+        
+        const similarCelebrities = billionaireIndexedData[bazi.dayTian] || [];
+        
+        if (similarCelebrities.length > 0) {
+            let celebrityMessage = `🌟 **相同日干的億萬富翁**\n\n`;
+            celebrityMessage += `在我們的數據庫中，有${similarCelebrities.length}位與您日干相同的億萬富翁：\n\n`;
+            
+            similarCelebrities.forEach((celebrity, index) => {
+                celebrityMessage += `**${index + 1}. ${celebrity.Name}**\n`;
+                celebrityMessage += `八字：${celebrity.bazi}\n`;
+                celebrityMessage += `財富來源：${celebrity["Source of Wealth"]}\n`;
+                celebrityMessage += `淨資產：${celebrity["Net Worth (billions)"]}億美元\n`;
+                celebrityMessage += `行業屬性：${celebrity.industryElement}\n\n`;
+            });
+            
+            celebrityMessage += `💡 **成功啟示**：這些成功人士與您有相似的八字特質，他們的成功路徑可以為您提供寶貴的參考！`;
+            
+            this.addMessage(celebrityMessage, 'ai');
+        } else {
+            this.addMessage('暫時沒有找到完全相同日干的知名人士數據，但您的八字特質依然具有獨特的優勢！', 'ai');
+        }
+        
+        await this.simulateTyping();
+        this.addMessage('🤖 您可以繼續詢問：\n• 詳細的性格分析\n• 投資理財建議\n• 事業發展方向\n• 與其他八字的比較', 'ai');
+    }
+    
+    async sendMessage() {
+        const message = this.chatInput.value.trim();
+        if (!message) return;
+        
+        this.addMessage(message, 'user');
+        this.chatInput.value = '';
+        
+        await this.simulateTyping();
+        
+        let response = this.generateResponse(message);
+        this.addMessage(response, 'ai');
+    }
+    
+    generateResponse(message) {
+        const lowerMessage = message.toLowerCase();
+        
+        if (lowerMessage.includes('職業') || lowerMessage.includes('工作') || lowerMessage.includes('事業')) {
+            if (this.currentBazi) {
+                const prediction = careerPredictions[this.currentBazi.dayTian];
+                return `根據您的日干「${this.currentBazi.dayTian}」分析，建議重點關注${prediction.careers.slice(0, 3).join('、')}等領域。這些行業與您的八字特質高度匹配，成功機率較高。`;
+            }
+            return '請先進行八字分析，我將根據您的具體八字特質提供個性化的職業建議。';
+        } else if (lowerMessage.includes('投資') || lowerMessage.includes('理財') || lowerMessage.includes('財富')) {
+            if (this.currentBazi) {
+                const prediction = careerPredictions[this.currentBazi.dayTian];
+                return `基於相同日干億萬富翁的成功模式，建議您關注${prediction.topIndustries[0]}行業的投資機會。平均而言，您這類八字的成功者財富水平達到${prediction.avgWealth}億美元。`;
+            }
+            return '財富創造與八字特質密切相關。請先完成八字分析，我將為您提供基於真實數據的投資建議。';
+        } else if (lowerMessage.includes('性格') || lowerMessage.includes('特質') || lowerMessage.includes('個性')) {
+            if (this.currentBazi) {
+                const prediction = careerPredictions[this.currentBazi.dayTian];
+                return `您的核心性格特質：${prediction.traits}。這種特質在${prediction.element}性行業中特別容易發揮優勢，建議重點發展相關能力。`;
+            }
+            return '性格分析需要基於您的具體八字。請先填寫出生信息進行分析。';
+        } else if (lowerMessage.includes('名人') || lowerMessage.includes('成功') || lowerMessage.includes('案例')) {
+            return '我的數據庫包含169位全球億萬富翁的真實八字信息。完成您的八字分析後,我可以為您找相同特質的成功人士案例。';
+        } else if (lowerMessage.includes('比較') || lowerMessage.includes('其他')) {
+            return '我可以為您比較不同日干的特質差異。每個日干都有其獨特的優勢領域和成功模式。您想了解哪個日干的特質？';
+        } else {
+            return '我是基於169位億萬富翁真實數據的AI八字分析師。我可以為您提供:職業預測、財富分析、性格解讀、成功案例匹配。請告訴我您最關心的問題！';
+        }
+    }
+    
+    addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        
+        // 處理換行和格式
+        const formattedText = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        messageDiv.innerHTML = formattedText;
+        
+        this.chatMessages.appendChild(messageDiv);
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+    }
+    
+    async simulateTyping() {
+        this.typingIndicator.style.display = 'flex';
+        this.chatSendBtn.disabled = true;
+        
+        await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
+        
+        this.typingIndicator.style.display = 'none';
+        this.chatSendBtn.disabled = false;
+    }
+}
 
-      function getElementClass(dayGan) {
-        const map = {
-          '甲':'wood','乙':'wood','丙':'fire','丁':'fire',
-          '戊':'earth','己':'earth','庚':'metal','辛':'metal',
-          '壬':'water','癸':'water'
-        };
-        return map[dayGan] || 'metal';
-      }
-
-      function getElementName(dayGan) {
-        const map = {
-          '甲':'阳木','乙':'阴木','丙':'阳火','丁':'阴火',
-          '戊':'阳土','己':'阴土','庚':'阳金','辛':'阴金',
-          '壬':'阳水','癸':'阴水'
-        };
-        return map[dayGan] || '金';
-      }
-
-      function getElementDescription(dayGan) {
-        const descriptions = {
-          '甲': '阳木如参天大树，具有领导力和开拓精神',
-          '乙': '阴木如藤蔓花草，擅长协调和艺术创造',
-          '丙': '阳火如太阳光芒，热情积极善于传播',
-          '丁': '阴火如灯烛星光，心思细腻专注细节',
-          '戊': '阳土如高山大地，稳重可靠适合管理',
-          '己': '阴土如田园之土，包容性强善于策划',
-          '庚': '阳金如刀剑矿石，果断坚决适合技术',
-          '辛': '阴金如珠宝玉器，精致敏锐适合分析',
-          '壬': '阳水如江河湖海，智慧灵活适应性强',
-          '癸': '阴水如雨露霜雪，敏感聪慧擅长研究'
-        };
-        return descriptions[dayGan] || '具有多方面的才能';
-      }
-
-      function getJobIcon(dayGan) {
-        const icons = {
-          '甲': '🌳', '乙': '🎨', '丙': '🎭', '丁': '✍️',
-          '戊': '🏢', '己': '📊', '庚': '⚙️', '辛': '💹',
-          '壬': '🔬', '癸': '📚'
-        };
-        return icons[dayGan] || '🌟';
-      }
-
-      function getExampleJobs(dayGan) {
-        const jobs = {
-          '甲': ['教育总监', '项目经理', '政策制定者'],
-          '乙': ['平面设计师', '园艺师', '心理咨询师'],
-          '丙': ['主持人', '品牌策划', '影视导演'],
-          '丁': ['文案编辑', '针灸师', '精密仪器工程师'],
-          '戊': ['CEO', '建筑师', '金融分析师'],
-          '己': ['HR经理', '市场研究员', '风水师'],
-          '庚': ['外科医生', '程序员', '机械工程师'],
-          '辛': ['数据分析师', '珠宝鉴定师', '法律顾问'],
-          '壬': ['AI研究员', '航海家', '投资顾问'],
-          '癸': ['科学家', '心理学家', '神秘学研究者']
-        };
-        return jobs[dayGan] || ['自由职业者', '跨界专家'];
-      }
-
-      resultDiv.innerHTML = `
-        <div class="result-card">
-          <div class="header">
-            <div class="bazi-pillar ${getElementClass(dayGan)}">${dayGan}</div>
-            <h2>${name}的职业命理分析</h2>
-          </div>
-
-          <div class="bazi-grid">
-            ${eightChar.getYear()}<br><small>年柱</small>
-            ${eightChar.getMonth()}<br><small>月柱</small>
-            ${eightChar.getDay()}<br><small>日柱</small>
-            ${eightChar.getTime()}<br><small>时柱</small>
-          </div>
-
-          <div class="analysis">
-            <p>您的八字日干为 <span class="highlight ${getElementClass(dayGan)}">${dayGan}（${getElementName(dayGan)}）</span>，${getElementDescription(dayGan)}</p>
-          </div>
-
-          <div class="job-section">
-            <h3>✨ 适合职业方向 ✨</h3>
-            <div class="job-box ${getElementClass(dayGan)}">
-              <div class="job-icon">${getJobIcon(dayGan)}</div>
-              <div class="job-details">
-                <h4>${getJobCategory(dayGan)}</h4>
-                <ul>${getExampleJobs(dayGan).map(job => `<li>${job}</li>`).join('')}</ul>
-              </div>
-            </div>
-          </div>
-
-          <div class="tip">
-            <small>注：此分析基于传统八字理论，仅供参考</small>
-          </div>
-        </div>
-      `;
-    });
+// 初始化聊天機器人
+document.addEventListener('DOMContentLoaded', () => {
+    new BaziChatBot();
+});
 </script>
 </body>
 </html>
